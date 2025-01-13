@@ -3,14 +3,21 @@ using System.Linq;
 
 namespace SpeedrunTimerFix;
 
-public static partial class Hooks
+public static class Hooks
 {
-    public static void ApplyInit()
+    public static void ApplyInitHooks()
     {
         On.RainWorld.OnModsInit += RainWorld_OnModsInit;
     }
 
-    public static bool IsInit { get; private set; } = false;
+    // All non-init hooks are called from here
+    private static void ApplyHooks()
+    {
+        TimerDisplay_Hooks.ApplyHooks();
+        TimerFunction_Hooks.ApplyHooks();
+    }
+
+    public static bool IsInit { get; private set; }
 
     private static void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
     {
@@ -19,7 +26,11 @@ public static partial class Hooks
             // This needs to be called each init due to a current bug, it should be fixed in the next game update, but there is no harm in calling it multiple times
             ModOptions.RegisterOI();
 
-            if (IsInit) return;
+            if (IsInit)
+            {
+                return;
+            }
+
             IsInit = true;
 
             ApplyHooks();
@@ -33,19 +44,11 @@ public static partial class Hooks
         }
         catch (Exception e)
         {
-            Plugin.Logger.LogError("OnModsInit:\n" + e.Message + '\n' + e.StackTrace);
+            e.LogHookException();
         }
         finally
         {
             orig(self);
         }
-    }
-
-
-    // All non-init hooks are called from here
-    private static void ApplyHooks()
-    {
-        ApplyTimerFunctionHooks();
-        ApplyTimerDisplayHooks();
     }
 }

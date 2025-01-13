@@ -57,7 +57,7 @@ public sealed class ModOptions : OptionsTemplate
         "Top Right",
         "Bottom Left",
         "Bottom Right",
-        "Bottom"
+        "Bottom",
     ];
 
     public static Configurable<string> TimerPosition { get; } = Instance.config.Bind(nameof(TimerPosition), TimerPositions[0], new ConfigurableInfo(
@@ -98,7 +98,7 @@ public sealed class ModOptions : OptionsTemplate
         AddCheckBox(ShowFixedUpdateTimer);
         DrawCheckBoxes(ref Tabs[tabIndex]);
 
-        AddNewLine(1);
+        AddNewLine();
         DrawBox(ref Tabs[tabIndex]);
 
 
@@ -107,11 +107,11 @@ public sealed class ModOptions : OptionsTemplate
         var timerPositions = TimerPositions.Select(pos => new ListItem(pos, pos)).ToList();
 
         AddTextLabel("Timer Position");
-        DrawTextLabels(ref Tabs[tabIndex], new Vector2(120.0f, 0.0f));
+        DrawTextLabels(ref Tabs[tabIndex], new Vector2(110.0f, 0.0f));
 
-        AddNewLine(1);
+        AddNewLine();
         AddComboBox(TimerPosition, timerPositions, "");
-        DrawComboBoxes(ref Tabs[tabIndex], 80.0f);
+        DrawComboBoxes(ref Tabs[tabIndex], 20.0f);
 
 
         var offset = new Vector2(-125.0f, -150.0f);

@@ -1,12 +1,11 @@
 ﻿using MoreSlugcats;
-using System;
 using UnityEngine;
 
 namespace SpeedrunTimerFix;
 
-public static partial class Hooks
+public static class TimerFunction_Hooks
 {
-    public static void ApplyTimerFunctionHooks()
+    public static void ApplyHooks()
     {
         On.Menu.SlugcatSelectMenu.Update += SlugcatSelectMenu_Update;
     }
@@ -23,7 +22,10 @@ public static partial class Hooks
             var slugcatPage = self.slugcatPages[self.slugcatPageIndex];
             var tracker = SpeedRunTimer.GetCampaignTimeTracker(slugcatPage.slugcatNumber);
 
-            if (tracker == null) return;
+            if (tracker == null)
+            {
+                return;
+            }
 
             tracker.WipeTimes();
 
@@ -36,7 +38,10 @@ public static partial class Hooks
             var slugcatPage = self.slugcatPages[self.slugcatPageIndex];
             var tracker = SpeedRunTimer.GetCampaignTimeTracker(slugcatPage.slugcatNumber);
 
-            if (tracker == null) return;
+            if (tracker == null)
+            {
+                return;
+            }
 
             tracker.CompletedFixedTime = tracker.CompletedFreeTime;
             tracker.LostFixedTime = tracker.LostFreeTime;

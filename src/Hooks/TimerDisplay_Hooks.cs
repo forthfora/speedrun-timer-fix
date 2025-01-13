@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace SpeedrunTimerFix;
 
-public static partial class Hooks
+public static class TimerDisplay_Hooks
 {
-    public static void ApplyTimerDisplayHooks()
+    public static void ApplyHooks()
     {
         On.MoreSlugcats.SpeedRunTimer.Update += SpeedRunTimer_Update;
         
@@ -37,7 +37,10 @@ public static partial class Hooks
 
         var tracker = Utils.GetCampaignTimeTracker();
 
-        if (tracker == null) return;
+        if (tracker == null)
+        {
+            return;
+        }
 
 
         self.timeLabel.text = tracker.TotalFreeTimeSpan.GetIGTFormatOptionalMs();
@@ -49,7 +52,7 @@ public static partial class Hooks
 
         if (ModOptions.ShowOldTimer.Value)
         {
-            if (game != null && game.IsStorySession)
+            if (game is not null && game.IsStorySession)
             {
                 var oldTime = game.GetStorySession.saveState.totTime
                               + game.GetStorySession.saveState.deathPersistentSaveData.deathTime
@@ -73,7 +76,7 @@ public static partial class Hooks
 
         if (ModOptions.ShowTotTime.Value)
         {
-            if (game != null && game.IsStorySession)
+            if (game is not null && game.IsStorySession)
             {
                 var totTime = game.GetStorySession.saveState.totTime
                               + game.GetStorySession.playerSessionRecords[0].time / 40;
@@ -99,23 +102,21 @@ public static partial class Hooks
             self.fade = 1.0f;
         }
 
-        if (game != null)
+
+        self.timeLabel.color = ModOptions.TimerColor.Value;
+
+        if (game is not null)
         {
+            // Set the color of the timer to black upon entering the void sea, to make it easier to read
             if (game.cameras[0].voidSeaMode && game.StoryCharacter != MoreSlugcatsEnums.SlugcatStatsName.Saint)
             {
-                Player player = game.Players[0].realizedCreature as Player;
-                if (player.mainBodyChunk.pos.y > -3000)
+                var player = game.RealizedPlayerFollowedByCamera;
+
+                // Only for the first section, when the background is golden (the background is black otherwise)
+                if (player is not null && player.mainBodyChunk.pos.y > -3000.0f)
                 {
                     self.timeLabel.color = Color.black;
                 }
-                else
-                {
-                    self.timeLabel.color = ModOptions.TimerColor.Value;
-                }
-            }
-            else
-            {
-                self.timeLabel.color = ModOptions.TimerColor.Value;
             }
         }
 
@@ -164,11 +165,13 @@ public static partial class Hooks
             self.pos.y += additionalTimerOffset * (additionalTimersShown - 1);
         }
 
+        // Move out the way of the dev tools label
         if (ModOptions.TimerPosition.Value == "Top (Default)" && additionalTimersShown > 0 && Utils.RainWorldGame?.devToolsActive == true)
         {
             self.pos.y += additionalTimerOffset;
         }
 
+        // Move out the way of the food / karma HUD
         if (ModOptions.TimerPosition.Value == "Bottom Left" && self.hud.karmaMeter.fade > 0.0f)
         {
             self.pos.y += 65.0f;
@@ -184,6 +187,7 @@ public static partial class Hooks
             }
         }
 
+        // Move out the way of the jolly coop HUD
         if (ModOptions.TimerPosition.Value == "Bottom Right" && ((self.hud.karmaMeter.fade > 0.0f && ModManager.JollyCoop) || (Utils.RainWorldGame?.GamePaused == true)))
         {
             self.pos.y += 45.0f;
@@ -202,12 +206,18 @@ public static partial class Hooks
         orig(self, menu, owner, pageIndex, slugcatNumber);
 
         
-        if (self.saveGameData.shelterName == null || self.saveGameData.shelterName.Length <= 2) return;
+        if (self.saveGameData.shelterName == null || self.saveGameData.shelterName.Length <= 2)
+        {
+            return;
+        }
 
 
         var tracker = slugcatNumber.GetCampaignTimeTracker();
 
-        if (tracker == null) return;
+        if (tracker == null)
+        {
+            return;
+        }
 
 
         var existingTimerFormatted = tracker.TotalFreeTimeSpan.GetIGTFormat(true);
@@ -260,12 +270,18 @@ public static partial class Hooks
         var slugcat = self.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat;
         var saveGameData = SlugcatSelectMenu.MineForSaveData(self, slugcat);
 
-        if (saveGameData == null) return;
+        if (saveGameData == null)
+        {
+            return;
+        }
 
 
         var tracker = slugcat.GetCampaignTimeTracker();
 
-        if (tracker == null) return;
+        if (tracker == null)
+        {
+            return;
+        }
 
 
         var existingTimerFormatted = tracker.TotalFreeTimeSpan.GetIGTFormat(true);
@@ -298,18 +314,27 @@ public static partial class Hooks
 
 
     // Optionally add the timer to the sleep & death screen 
-    private static void SleepAndDeathScreen_GetDataFromGame(On.Menu.SleepAndDeathScreen.orig_GetDataFromGame orig, SleepAndDeathScreen self, KarmaLadderScreen.SleepDeathScreenDataPackage package)
+    private static void SleepAndDeathScreen_GetDataFromGame(On.Menu.SleepAndDeathScreen.orig_GetDataFromGame orig, SleepAndDeathScreen self, KarmaLadderScreen.SleepDeathScreenDataPackage? package)
     {
         orig(self, package);
 
-        if (!ModManager.MMF || !MMF.cfgSpeedrunTimer.Value) return;
+        if (!ModManager.MMF || !MMF.cfgSpeedrunTimer.Value)
+        {
+            return;
+        }
 
-        if (!ModOptions.ShowTimerInSleepScreen.Value) return;
+        if (!ModOptions.ShowTimerInSleepScreen.Value)
+        {
+            return;
+        }
 
 
         var tracker = package?.characterStats?.name?.GetCampaignTimeTracker();
 
-        if (tracker == null) return;
+        if (tracker == null)
+        {
+            return;
+        }
 
 
         var speedrunTimerText = tracker.TotalFreeTimeSpan.GetIGTFormatConditionalMs();
@@ -319,7 +344,7 @@ public static partial class Hooks
 
         if (ModOptions.ShowOldTimer.Value)
         {
-            if (package?.saveState != null)
+            if (package?.saveState is not null)
             {
                 var oldTimeAlive = package.saveState.totTime;
                 var oldTimeLost = package.saveState.deathPersistentSaveData.deathTime;
@@ -341,7 +366,7 @@ public static partial class Hooks
 
         if (ModOptions.ShowTotTime.Value)
         {
-            if (package?.saveState != null)
+            if (package?.saveState is not null)
             {
                 var totTime = package.saveState.totTime;
 
