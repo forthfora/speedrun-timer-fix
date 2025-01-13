@@ -13,6 +13,6 @@
     "Tools"
   ],
   "WorkshopID": 2960580529,
-  "UploadFilesOnly": false,
+  "UploadFilesOnly": true,
   "UploadThumbnail": false
 }
