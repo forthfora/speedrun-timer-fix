@@ -44,11 +44,11 @@ public static partial class Hooks
 
         var additionalTimersShown = 0;
 
+        var game = Utils.RainWorldGame;
+
 
         if (ModOptions.ShowOldTimer.Value)
         {
-            var game = Utils.RainWorldGame;
-
             if (game != null && game.IsStorySession)
             {
                 var oldTime = game.GetStorySession.saveState.totTime
@@ -73,8 +73,6 @@ public static partial class Hooks
 
         if (ModOptions.ShowTotTime.Value)
         {
-            var game = Utils.RainWorldGame;
-
             if (game != null && game.IsStorySession)
             {
                 var totTime = game.GetStorySession.saveState.totTime
@@ -101,7 +99,25 @@ public static partial class Hooks
             self.fade = 1.0f;
         }
 
-        self.timeLabel.color = ModOptions.TimerColor.Value;
+        if (game != null)
+        {
+            if (game.cameras[0].voidSeaMode && game.StoryCharacter != MoreSlugcatsEnums.SlugcatStatsName.Saint)
+            {
+                Player player = game.Players[0].realizedCreature as Player;
+                if (player.mainBodyChunk.pos.y > -3000)
+                {
+                    self.timeLabel.color = Color.black;
+                }
+                else
+                {
+                    self.timeLabel.color = ModOptions.TimerColor.Value;
+                }
+            }
+            else
+            {
+                self.timeLabel.color = ModOptions.TimerColor.Value;
+            }
+        }
 
 
         var screenSize = self.hud.rainWorld.options.ScreenSize;
